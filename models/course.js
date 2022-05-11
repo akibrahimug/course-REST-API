@@ -5,6 +5,11 @@ const {Model, DataTypes} = require('sequelize')
 module.exports = (sequelize) => {
     class Course extends Model {}
     Course.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
         // Title-STRING
         title: {
             type: DataTypes.STRING,
@@ -43,9 +48,9 @@ module.exports = (sequelize) => {
     }, {sequelize});
     Course.associate = (models) => {
         Course.belongsTo(models.User, {
-            as: "director",
+            as: "User",
             foreignKey: {
-                fieldName: "directorUserId",
+                fieldName: "UserId",
                 allowNull: false,
             }
         })
