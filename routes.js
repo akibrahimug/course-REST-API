@@ -15,65 +15,121 @@ router.post('/users', asyncHandler(async(req,res) => {
             const errors = err.errors.map(er => er.message);
             res.status(400).json({errors})
         }else{
-            throw error
+            throw err
         }
     }
 }));
 // Get a User 
 router.get('/users', userAuthentication, asyncHandler(async(req,res) => {
-    const user = req.currentUser;
-    res.json({
-        First_Name: user.firstName,
-        Last_Name: user.lastName
-    })
+    try{
+        const user = req.currentUser;
+        res.status(200).json({
+            Message: `Welcome ${user.firstName} ${user.lastName}`
+        })
+    }catch(err){
+        throw err
+    }
 }))
 
 // Routes for Courses
 
 // Return Multiple courses
 router.get('/courses', userAuthentication, asyncHandler(async(req, res) => {
-    // Return all courses and Users associted with each course
-    const courses = await Course.findAll();
-    courses.map(course => {
-        res.json({
-            Title: course.title,
-            Description: course.description
-        })
+    try{
+    const courses = await Course.findAll({
+        include: [{
+            model: User,
+            as: "User"
+        }]
+    });
+    res.json({
+        Courses: courses,
     })
     // Handle errors (200)
+    }catch(err){
+        throw err
+    }
+
 
 }))
 // Return single course
 router.get('/courses/:id', asyncHandler(async(req,res) => {
-    // Return one course with :id params as id
-    await Course.findByPk(req.params.id)
-    // Handle errors (200)
+    try{
+        const course = await Course.findOne({
+            where: {
+                id: req.params.id
+            },
+            include: [{
+                model: User,
+                as: "User"
+            }]
+        })
+        if(course){
+            res.status(200).json({
+                Course: course
+            })
+        }else{
+            res.status(404).json({"Message": "Sorry Course Not Found"})
+        }
+        // Handle other errors
+    }catch(err){
+        throw err
+    }
+
 }))
 
 // Create single course
 router.post('/courses', asyncHandler(async(req,res) => {
     try{
         await Course.create(req.body)
-        res.status(201).json({"Message": "User successfully created"});
+        res.status(201).json({"Message": "Course successfully created"});
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
             res.status(400).json({errors})
         }else{
-            throw error
+            throw err
         }
     }
 }))
 
 // Update a course on the database
-router.put('/courses/:id', asyncHandler(async(req,res) => {
-    // Update corresponding course
-    // Handle errors (204)
+router.put('/courses/:id', userAuthentication, asyncHandler(async(req,res) => {
+    try{
+        const course = await Course.findByPk(req.params.id);
+        const updatedCourse = await course.update(req.body)
+        res.json({
+            Title: updatedCourse.title,
+            Description: updatedCourse.description
+        })
+        // Handle errors (204)
+    }catch(err){
+        if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
+            const errors = err.errors.map(er => er.message);
+            res.status(400).json({errors})
+        }else{
+            throw err
+        }
+    }
+
 }))
 
 // Delete a course
-router.delete('/courses/:id', asyncHandler(async(req, res) => {
+router.delete('/courses/:id', userAuthentication, asyncHandler(async(req, res) => {
     // Delete a course
+    const user = req.currentUser;
+    const course = await Course.findByPk(req.params.id);
+    if(course){
+        if(course.userId === user.id){
+            await course.destroy()
+            res.status(201).json({"Message": "Course deleted successfully"})
+        }else{
+            res.status(400).json({"Message": "Cannot delete a course you didnt create"})
+        }
+    }else{
+        res.status(404).json({"Message": "Course Not Found"})
+    }
+
     // Handle errors (204)
 }))
 

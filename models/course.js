@@ -5,11 +5,11 @@ const {Model, DataTypes} = require('sequelize')
 module.exports = (sequelize) => {
     class Course extends Model {}
     Course.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
+        // id: {
+        //     type: DataTypes.INTEGER,
+        //     primaryKey: true,
+        //     autoIncrement: true
+        // },
         // Title-STRING
         title: {
             type: DataTypes.STRING,
@@ -19,7 +19,7 @@ module.exports = (sequelize) => {
                     msg: 'Title is required'
                 },
                 notEmpty: {
-                    msg: "Please provide a valid Title"
+                    msg: "Please provide a Title"
                 }
             }
         },
@@ -50,9 +50,18 @@ module.exports = (sequelize) => {
         Course.belongsTo(models.User, {
             as: "User",
             foreignKey: {
-                fieldName: "UserId",
+                fieldName: "userId",
                 allowNull: false,
-            }
+                validate: {
+                    notNull: {
+                        msg: "Please provide a UserID"
+                    },
+                    notEmpty: {
+                        msg: "Please provide a UserID"
+                    }
+                }
+            },
+
         })
     }
     return Course
