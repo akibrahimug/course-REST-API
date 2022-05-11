@@ -34,7 +34,7 @@ router.get('/users', userAuthentication, asyncHandler(async(req,res) => {
 // Routes for Courses
 
 // Return Multiple courses
-router.get('/courses', userAuthentication, asyncHandler(async(req, res) => {
+router.get('/courses', asyncHandler(async(req, res) => {
     try{
     const courses = await Course.findAll({
         include: [{
@@ -45,7 +45,6 @@ router.get('/courses', userAuthentication, asyncHandler(async(req, res) => {
     res.json({
         Courses: courses,
     })
-    // Handle errors (200)
     }catch(err){
         throw err
     }
@@ -96,13 +95,17 @@ router.post('/courses', asyncHandler(async(req,res) => {
 // Update a course on the database
 router.put('/courses/:id', userAuthentication, asyncHandler(async(req,res) => {
     try{
+        const user = req.currentUser
         const course = await Course.findByPk(req.params.id);
-        const updatedCourse = await course.update(req.body)
-        res.json({
-            Title: updatedCourse.title,
-            Description: updatedCourse.description
-        })
-        // Handle errors (204)
+        if(course.userId === user.id){
+            const updatedCourse = await course.update(req.body)
+            res.status(204).json({
+                UpdatedCourse: updatedCourse
+            })
+        }else{
+            res.status(400).json({"Message": "You cannot Update  course you did not write"})
+        }
+        // Handle errors
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);

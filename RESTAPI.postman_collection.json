@@ -52,7 +52,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"emailAddress\": \"john23@smith.com\",\n  \"password\": \"password\"\n}"
+					"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Smith\",\n  \"emailAddress\": \"john23@smith.com\",\n  \"password\": \"password\",\n  \"confirmedPassword\": \"password\"\n}"
 				},
 				"url": {
 					"raw": "http://localhost:5000/api/users",
@@ -81,7 +81,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"firstName\": \"Joe\",\n  \"lastName\": \"Smith\",\n  \"emailAddress\": \"joe@smith.com\",\n  \"password\": \"password\"\n}"
+					"raw": "{\n  \"firstName\": \"Joe\",\n  \"lastName\": \"Smith\",\n  \"emailAddress\": \"joe@smith.com\",\n  \"password\": \"joepassword\",\n  \"confirmedPassword\": \"joepassword\"\n}"
 				},
 				"url": {
 					"raw": "http://localhost:5000/api/users",
