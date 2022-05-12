@@ -20,7 +20,7 @@ exports.userAuthentication = async(req, res, next) => {
         });
         // If the the user exsits
         if(user){
-            const authenticated = bcrypt.compareSync(credentials.pass, user.confirmedPassword)
+            const authenticated = bcrypt.compareSync(credentials.pass, user.password)
 
             // If password matches the user
             if(authenticated){
