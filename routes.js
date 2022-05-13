@@ -5,15 +5,15 @@ const { asyncHandler } = require('./middleWare/asyncHandler')
 const { userAuthentication } =  require('./middleWare/userAuthentication')
 
 // Routes for Authenticated Users
-// Post a User
+//Create a User
 router.post('/users', asyncHandler(async(req,res) => {
     try{
         await User.create(req.body)
-        res.status(201).json({"Message": "User successfully created"});
+        res.status(201).json({"Message": "User successfully created"}).location('/').end();
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
-            res.status(400).json({errors})
+            res.status(401).json({errors})
         }else{
             throw err
         }
@@ -22,9 +22,12 @@ router.post('/users', asyncHandler(async(req,res) => {
 // Get a User 
 router.get('/users', userAuthentication, asyncHandler(async(req,res) => {
     try{
-        const user = req.currentUser;
+        const user = req.currentUser
         res.status(200).json({
-            Message: `Welcome ${user.firstName} ${user.lastName}`
+           id: user.id,
+           firstName: user.firstName,
+           lastName: user.lastName,
+           emailAddress: user.emailAddress
         })
     }catch(err){
         throw err
@@ -37,14 +40,14 @@ router.get('/users', userAuthentication, asyncHandler(async(req,res) => {
 router.get('/courses', asyncHandler(async(req, res) => {
     try{
     const courses = await Course.findAll({
+        attributes: {exclude: ["createdAt", "updatedAt"]},
         include: [{
             model: User,
-            as: "User"
+            as: "User",
+            attributes: ["firstName", "lastName"]
         }]
     });
-    res.json({
-        Courses: courses,
-    })
+    res.status(200).json(courses)
     }catch(err){
         throw err
     }
@@ -58,9 +61,11 @@ router.get('/courses/:id', asyncHandler(async(req,res) => {
             where: {
                 id: req.params.id
             },
+            attributes: {exclude: ["createdAt", "updatedAt"]},
             include: [{
                 model: User,
-                as: "User"
+                as: "User",
+                attributes: ["firstName", "lastName"]
             }]
         })
         if(course){
@@ -78,14 +83,14 @@ router.get('/courses/:id', asyncHandler(async(req,res) => {
 }))
 
 // Create single course
-router.post('/courses', asyncHandler(async(req,res) => {
+router.post('/courses', userAuthentication, asyncHandler(async(req,res) => {
     try{
-        await Course.create(req.body)
-        res.status(201).json({"Message": "Course successfully created"});
+        const course = await Course.create(req.body)
+        res.status(201).location(`/courses/${course.id}`).end();
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
-            res.status(400).json({errors})
+            res.status(401).json({errors})
         }else{
             throw err
         }
@@ -103,13 +108,13 @@ router.put('/courses/:id', userAuthentication, asyncHandler(async(req,res) => {
                 UpdatedCourse: updatedCourse
             })
         }else{
-            res.status(400).json({"Message": "You cannot Update  course you did not write"})
+            res.status(403).end()
         }
         // Handle errors
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
-            res.status(400).json({errors})
+            res.status(401).json({errors})
         }else{
             throw err
         }
@@ -125,9 +130,9 @@ router.delete('/courses/:id', userAuthentication, asyncHandler(async(req, res) =
     if(course){
         if(course.userId === user.id){
             await course.destroy()
-            res.status(201).json({"Message": "Course deleted successfully"})
+            res.status(204).end()
         }else{
-            res.status(400).json({"Message": "Cannot delete a course you didnt create"})
+            res.status(403).json({"Message": "Cannot delete a course you didnt create"})
         }
     }else{
         res.status(404).json({"Message": "Course Not Found"})
