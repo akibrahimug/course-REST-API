@@ -9,7 +9,7 @@ const { userAuthentication } =  require('./middleWare/userAuthentication')
 router.post('/users', asyncHandler(async(req,res) => {
     try{
         await User.create(req.body)
-        res.status(201).json({"Message": "User successfully created"}).location('/').end();
+        res.status(201).location("/").json({"Message": "User successfully created"});
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
