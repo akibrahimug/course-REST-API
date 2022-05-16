@@ -9,11 +9,11 @@ const { userAuthentication } =  require('./middleWare/userAuthentication')
 router.post('/users', asyncHandler(async(req,res) => {
     try{
         await User.create(req.body)
-        res.status(201).location("/").json({"Message": "User successfully created"});
+        res.status(201).location("/").end();
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
-            res.status(401).json({errors})
+            res.status(400).json({errors})
         }else{
             throw err
         }
@@ -90,7 +90,7 @@ router.post('/courses', userAuthentication, asyncHandler(async(req,res) => {
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
-            res.status(401).json({errors})
+            res.status(400).json({errors})
         }else{
             throw err
         }
@@ -114,7 +114,7 @@ router.put('/courses/:id', userAuthentication, asyncHandler(async(req,res) => {
     }catch(err){
         if(err.name === "SequelizeValidationError" || err.name === "SequelizeUniqueConstraintError"){
             const errors = err.errors.map(er => er.message);
-            res.status(401).json({errors})
+            res.status(400).json({errors})
         }else{
             throw err
         }
@@ -137,8 +137,6 @@ router.delete('/courses/:id', userAuthentication, asyncHandler(async(req, res) =
     }else{
         res.status(404).json({"Message": "Course Not Found"})
     }
-
-    // Handle errors (204)
 }))
 
 module.exports = router;
