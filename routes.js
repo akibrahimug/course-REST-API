@@ -108,7 +108,7 @@ router.put('/courses/:id', userAuthentication, asyncHandler(async(req,res) => {
                 UpdatedCourse: updatedCourse
             })
         }else{
-            res.status(403).end()
+            res.status(403).json({"Message": "Cannot Update a course you didnt create"})
         }
         // Handle errors
     }catch(err){
